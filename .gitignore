@@ -1,0 +1,7 @@
+BUILD
+?clangd
+?mbed
+compile_commands?json
+?cache
+X_NUCLEO_IKS01A2
+mbed
