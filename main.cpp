@@ -1,15 +1,17 @@
 /**
  ******************************************************************************
+ * @project_name  STup!
  * @file    main.cpp
- * @author  CLab
+ * @author  Lorenzo Arrigoni
+ * @mail    loarri@gmail.com
  * @version V1.0.0
- * @date    2-December-2016
- * @brief   Simple Example application for using the X_NUCLEO_IKS01A1 
- *          MEMS Inertial & Environmental Sensor Nucleo expansion board.
+ * @date    30 Jan 2024
+ * @brief   Simple Example application for using the X_NUCLEO_IKS01A2
+ *          MEMS Inertial & Environmental Sensor expansion board and
+ *          an LCD 16x2 display.
  ******************************************************************************
  * @attention
  *
- * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -39,16 +41,24 @@
 /* Includes */
 #include "mbed.h"
 #include "XNucleoIKS01A2.h"
+#include "TextLCD.h"
+
+#define DURATA 3 //durata in sec del dato sul display
+
+// I2C Communication
+I2C i2c_lcd(I2C_SDA , I2C_SCL); // SDA, SCL
+
+/* Instantiate the LCD display */
+// LCD I2C address: 0x4E or 0x27
+TextLCD_I2C lcd(&i2c_lcd, 0x27, TextLCD::LCD16x2); // I2C bus, PCF8574 Slaveaddress, LCD Type
 
 /* Instantiate the expansion board */
 static XNucleoIKS01A2 *mems_expansion_board = XNucleoIKS01A2::instance(D14, D15, D4, D5);
 
 /* Retrieve the composing elements of the expansion board */
-static LSM303AGRMagSensor *magnetometer = mems_expansion_board->magnetometer;
 static HTS221Sensor *hum_temp = mems_expansion_board->ht_sensor;
 static LPS22HBSensor *press_temp = mems_expansion_board->pt_sensor;
-static LSM6DSLSensor *acc_gyro = mems_expansion_board->acc_gyro;
-static LSM303AGRAccSensor *accelerometer = mems_expansion_board->accelerometer;
+
 
 /* Helper function for printing floats & doubles */
 static char *print_double(char* str, double v, int decimalDigits=2)
@@ -89,56 +99,47 @@ static char *print_double(char* str, double v, int decimalDigits=2)
 /* Simple main function */
 int main() {
   uint8_t id;
-  float value1, value2;
-  char buffer1[32], buffer2[32];
-  int32_t axes[3];
-  
+  float value1, value2, value3;
+  char buffer1[32], buffer2[32], buffer3[32];
+
+  /* setup display */
+  lcd.setBacklight(TextLCD::LightOn);
+  lcd.setCursor(TextLCD::CurOff_BlkOff);
+
   /* Enable all sensors */
   hum_temp->enable();
   press_temp->enable();
-  magnetometer->enable();
-  accelerometer->enable();
-  acc_gyro->enable_x();
-  acc_gyro->enable_g();
-  
-  printf("\r\n--- Starting new run ---\r\n");
 
-  hum_temp->read_id(&id);
-  printf("HTS221  humidity & temperature    = 0x%X\r\n", id);
-  press_temp->read_id(&id);
-  printf("LPS22HB  pressure & temperature   = 0x%X\r\n", id);
-  magnetometer->read_id(&id);
-  printf("LSM303AGR magnetometer            = 0x%X\r\n", id);
-  accelerometer->read_id(&id);
-  printf("LSM303AGR accelerometer           = 0x%X\r\n", id);
-  acc_gyro->read_id(&id);
-  printf("LSM6DSL accelerometer & gyroscope = 0x%X\r\n", id);
- 
+  printf("\n\rSTup! - Environmental data logger - 2024\n\r");
+  lcd.printf("STup!\n");
+  lcd.printf("by L. Arrigoni");
+  wait(3);
+  lcd.cls();
+
   while(1) {
     printf("\r\n");
 
-    hum_temp->get_temperature(&value1);
-    hum_temp->get_humidity(&value2);
-    printf("HTS221: [temp] %7s C,   [hum] %s%%\r\n", print_double(buffer1, value1), print_double(buffer2, value2));
+    hum_temp->get_temperature(&value1);   // get Temperature
+    hum_temp->get_humidity(&value2);      // get Humidity
+    press_temp->get_pressure(&value3);    // get Pressure
+
+    printf("[temp] %7s C, [hum] %s%%, [press] %s mbar\r\n", print_double(buffer1, value1), print_double(buffer2, value2),print_double(buffer3, value3));
     
-    press_temp->get_temperature(&value1);
-    press_temp->get_pressure(&value2);
-    printf("LPS22HB: [temp] %7s C, [press] %s mbar\r\n", print_double(buffer1, value1), print_double(buffer2, value2));
-
-    printf("---\r\n");
-
-    magnetometer->get_m_axes(axes);
-    printf("LSM303AGR [mag/mgauss]:  %6ld, %6ld, %6ld\r\n", axes[0], axes[1], axes[2]);
-    
-    accelerometer->get_x_axes(axes);
-    printf("LSM303AGR [acc/mg]:  %6ld, %6ld, %6ld\r\n", axes[0], axes[1], axes[2]);
-
-    acc_gyro->get_x_axes(axes);
-    printf("LSM6DSL [acc/mg]:      %6ld, %6ld, %6ld\r\n", axes[0], axes[1], axes[2]);
-
-    acc_gyro->get_g_axes(axes);
-    printf("LSM6DSL [gyro/mdps]:   %6ld, %6ld, %6ld\r\n", axes[0], axes[1], axes[2]);
-
-    wait(1.5);
+    lcd.clrIcon();
+    lcd.printf("Temp.:%7s C", print_double(buffer1, value1));
+    wait(DURATA);
+    lcd.cls();
+    lcd.printf("Hum.: %s%% ", print_double(buffer2, value2));   
+    wait(DURATA);
+    lcd.cls();
+    lcd.printf("P.: %s mbar\n", print_double(buffer3, value3));  
+    wait(DURATA);
+    lcd.cls();
+    /*
+    lcd.printf("Temp:%7s C\n", print_double(buffer1, value1));
+    lcd.printf("H:%s%% P:%s", print_double(buffer2, value2),print_double(buffer3, value3));  
+    wait(DURATA);
+    lcd.cls();
+    */
   }
 }
