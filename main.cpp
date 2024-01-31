@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @project_name  STup!
+ * @project_name  SThp!
  * @file    main.cpp
  * @author  Lorenzo Arrigoni
  * @mail    loarri@gmail.com
