@@ -1,6 +1,6 @@
 /**
  ******************************************************************************
- * @project_name  STedl
+ * @project_name  STedl!
  * @file    main.cpp
  * @author  Lorenzo Arrigoni
  * @mail    loarri@gmail.com
