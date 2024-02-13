@@ -192,8 +192,6 @@ int main() {
             lcd.printf("DANGER!!! CO LEVEL IS HIGH");
             buzz.beep(2000,3);
         }
-        //thread_sleep_for(DURATA);
-        //ThisThread::sleep_for(DURATA);
         wait(DURATA);
         lcd.cls();
     }
