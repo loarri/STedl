@@ -7,8 +7,8 @@
  * @version V1.0.0
  * @date    30 Jan 2024
  * @brief   Simple Example application for using the X_NUCLEO_IKS01A2
- *          MEMS Inertial & Environmental Sensor expansion board with
- *          a MQ-7 gas sensor and a LCD 16x2 display.
+ *          MEMS Inertial & Environmental Sensor expansion board plus
+ *          an MQ-7 gas sensor plus a LCD 16x2 display.
  ******************************************************************************
  * @attention
  *
